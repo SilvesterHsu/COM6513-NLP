@@ -12,9 +12,9 @@ random.seed(123)
 np.random.seed(123)
 
 # %%
-data_tr = pd.read_csv('assignment1/data_sentiment/train.csv')
+data_tr = pd.read_csv('assignment1/data_sentiment/train.csv',header=None)
 data_tr.head()
-text_tr = list(data_tr.to_numpy()[:,0])
+text_tr = X_tr_raw = list(data_tr.to_numpy()[:,0])
 label_tr = data_tr.to_numpy()[:,1]
 
 # %%
@@ -33,10 +33,10 @@ def extract_ngrams(x_raw, ngram_range=(1,3), token_pattern=r'\b[A-Za-z][A-Za-z]+
     Args:
         x_raw: a string corresponding to the raw text of a document
         ngram_range: a tuple of two integers denoting the type of ngrams you want
-                to extract, e.g. (1,2) denotes extracting unigrams and bigrams.
+            to extract, e.g. (1,2) denotes extracting unigrams and bigrams.
         token_pattern: a string to be used within a regular expression to extract
-                all tokens. Note that data is already tokenised so you could opt
-                for a simple white space tokenisation.
+            all tokens. Note that data is already tokenised so you could opt for
+            a simple white space tokenisation.
         stop_words: a list of stop words
         vocab: a given vocabulary. It should be used to extract specific features.
 
@@ -65,6 +65,7 @@ def extract_ngrams(x_raw, ngram_range=(1,3), token_pattern=r'\b[A-Za-z][A-Za-z]+
             for n=2,
             [('great', 'movie'),('movie', 'watch')]
         '''
+        '''
         if n <= 0:
             raise Exception('n = {}, but n can not be smaller than 1 in N-gram'.format(n))
         if len(features) == 0:
@@ -84,20 +85,26 @@ def extract_ngrams(x_raw, ngram_range=(1,3), token_pattern=r'\b[A-Za-z][A-Za-z]+
                 present = tuple(s[i:i+n]) if n != 1 else s[i]
                 if present in features:
                     tmp.append(present)
-            return tmp
+            return tmp'''
+        if n <= 0 or n > len(s):
+            raise Exception('n is out of range')
+        if len(features) == 0:
+            if n == 1:
+                return s
+            else:
+                return map(lambda i: tuple(s[i:i+n]),range(len(s)-n+1))
+        else:
+            if n == 1:
+                return [t for t in s if t in features]
+            else:
+                return [tuple(s[i:i+n]) for i in range(0,len(s)-n+1) if tuple(s[i:i+n]) in features]
 
     # Find all words by condition
     pattern = re.compile(token_pattern)
-    term_eligible = list()
-    for term in pattern.findall(x_raw):
-        if term not in stop_words:
-            term_eligible.append(term)
+    term_eligible = [term for term in pattern.findall(x_raw) if term not in stop_words]
 
     # Find combinations of different N-grams
-    x = list()
-    for n in range(ngram_range[0],ngram_range[1]+1):
-        x += finder(term_eligible,n,vocab)
-
+    x = [term for n in range(ngram_range[0],ngram_range[1]+1) for term in finder(term_eligible,n,vocab)]
     return x
 
 # %%
@@ -113,3 +120,57 @@ extract_ngrams("this is a great movie to watch",
 
 
 # %%
+def get_vocab(X_raw, ngram_range=(1,3), token_pattern=r'\b[A-Za-z][A-Za-z]+\b', min_df=0, keep_topN=0, stop_words=[]):
+    '''1. create a vocabulary of ngrams
+       2. count the document frequencies of ngrams
+       3. their raw frequency
+
+    Args:
+        X_raw: a list of strings each corresponding to the raw text of a document
+        ngram_range: a tuple of two integers denoting the type of ngrams you want
+            to extract, e.g. (1,2) denotes extracting unigrams and bigrams.
+        token_pattern: a string to be used within a regular expression to extract
+            all tokens. Note that data is already tokenised so you could opt for
+            a simple white space tokenisation.
+        stop_words: a list of stop words
+        min_df: keep ngrams with a minimum document frequency.
+        keep_topN: keep top-N more frequent ngrams.
+
+    Returns:
+        vocab: a set of the n-grams that will be used as features.
+        df: a Counter (or dict) that contains ngrams as keys and their corresponding
+            document frequency as values.
+        ngram_counts: counts of each ngram in vocab
+        For example,
+
+
+    '''
+
+    tf = ngram_counts = list()
+    df = list()
+    for line in X_tr_raw:
+        features = extract_ngrams(line,ngram_range=(1,3),stop_words=stop_words)
+        tf += features
+        df += list(set(features))
+    tf = ngram_counts = Counter(tf)
+    df = Counter(df)
+    vocab = [items[0] for items in tf.most_common()[:5000]]
+
+    return vocab, df, ngram_counts
+
+#%%
+vocab, df, ngram_counts = get_vocab(X_tr_raw, ngram_range=(1,3), keep_topN=5000, stop_words=stop_words)
+print(len(vocab))
+print()
+print(list(vocab)[:100])
+print()
+print(df.most_common()[:10])
+
+#%%
+reference_dict = dict(enumerate(vocab))
+
+#%%
+
+
+#%%
+t = ['manages', 'questions', 'covered', 'body', 'ron', 'flair', 'drunken', 'approach', 'etc', 'allowing', 'lebowski', 'strong', 'model', 'category', 'family', 'couldn', 'argento', 'why', 'shown', ('doesn', 'work'), 'ocean', ('lot', 'more'), 'lou', 'attorney', 'kick', 'thinking', 'worth', 'larger', ('waste', 'time'), ('back', 'forth'), 'roles', 'adventures', ('million', 'dollars'), 'critics', 'according', ('ghost', 'dog'), 'outside', 'protect', ('last', 'time'), ('but', 'so'), 'creative', 'sell', 'pile', 'needless', 'immediately', 'screens', 'cards', 'blonde', 'meets', 'place', 'needs', 'needed', 'teacher', 'conceived', 'competition', 'powerful', 'expected', ('first', 'movie'), ('but', 'least'), 'gave', 'pleasures', 'spectacular', 'safe', 'wishes', 'stuff', ('there', 'something'), 'robert', 'kid', 'latest', ('bad', 'guy'), 'comet', 'street', 'intelligent', 'allow', ('tim', 'roth'), ('production', 'design'), 'living', 'abyss', 'clean', ('makes', 'him'), 'aware', 'footage', 'vicious', 'sharon', 'genuinely', 'south', 'draw', 'wall', ('will', 'smith'), 'romeo', ('scenes', 'but'), 'sometimes', 'friend', 'millionaire', 'families', 'technique', 'spirit', ('not', 'going'), 'horrifying', 'national']
