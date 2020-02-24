@@ -12,7 +12,7 @@ random.seed(123)
 np.random.seed(123)
 
 # %%
-data_tr = pd.read_csv('assignment1/data_sentiment/train.csv',header=None)
+data_tr = pd.read_csv('data_sentiment/train.csv',header=None)
 data_tr.head()
 text_tr = X_tr_raw = list(data_tr.to_numpy()[:,0])
 label_tr = data_tr.to_numpy()[:,1]
