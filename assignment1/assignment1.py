@@ -194,21 +194,26 @@ def vectorise(X_ngram, vocab):
             X_vec[docs_index,feature_index] = X_ngram[docs_index].get(reference_dict[feature_index],0)
     return X_vec
 
-#%%
+#%% Count vectors
 X_tr_count = vectorise(X_ngram, vocab)
 print("The shape of X_vec is {}".format(X_tr_count.shape))
 X_tr_count[:2,:50]
 
 #%%
-idf = {term: np.log(len(X_ngram)/frequency) for term,frequency in df.items()}
-idf
+#idf = {term: np.log(len(X_ngram)/frequency) for term,frequency in df.items()}
+#idf
+#%% compute idfs
+idfs = np.zeros((1,len(vocab)))
+for i in range(len(vocab)):
+    idfs[0,i] = np.log(len(X_ngram)/df[reference_dict[i]])
+
+idfs
+
+#%% transform count vectors to tf.idf vectors
+X_tr_tfidf = X_tr_count*idfs
 
 #%%
-
-
-
-
-
+X_tr_tfidf[1,:50]
 
 
 
