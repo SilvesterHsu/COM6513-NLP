@@ -168,8 +168,59 @@ print(df.most_common()[:10])
 
 #%%
 reference_dict = dict(enumerate(vocab))
+reference_dict
 
 #%%
+X_ngram = [Counter(extract_ngrams(line,ngram_range=(1,3),stop_words=stop_words)) for line in X_tr_raw]
+X_ngram[:5]
+
+#%%
+def vectorise(X_ngram, vocab):
+    '''1. select the features of vocab from X_ngram.
+       2. convert X_ngram into matrix
+
+    Args:
+        X_ngram: a list of texts (documents) features(Bag-of-ngram)
+        vocab: a set of selected features(n-grams)
+
+    Returns:
+        X_vec: an array shapes #document x #vocab, where document is a single line
+            in dataset.
+    '''
+
+    X_vec = np.zeros([len(X_ngram),len(vocab)])
+    for docs_index in range(len(X_ngram)):
+        for feature_index in range(len(vocab)):
+            X_vec[docs_index,feature_index] = X_ngram[docs_index].get(reference_dict[feature_index],0)
+    return X_vec
+
+#%%
+X_tr_count = vectorise(X_ngram, vocab)
+print("The shape of X_vec is {}".format(X_tr_count.shape))
+X_tr_count[:2,:50]
+
+#%%
+idf = {term: np.log(len(X_ngram)/frequency) for term,frequency in df.items()}
+idf
+
+#%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #%%
