@@ -143,18 +143,17 @@ def get_vocab(X_raw, ngram_range=(1,3), token_pattern=r'\b[A-Za-z][A-Za-z]+\b', 
         ngram_counts: counts of each ngram in vocab
         For example,
 
-
     '''
 
     tf = ngram_counts = list()
     df = list()
-    for line in X_tr_raw:
+    for line in X_raw:
         features = extract_ngrams(line,ngram_range=(1,3),stop_words=stop_words)
         tf += features
         df += list(set(features))
     tf = ngram_counts = Counter(tf)
     df = Counter(df)
-    vocab = [items[0] for items in tf.most_common()[:5000]]
+    vocab = [items[0] for items in tf.most_common()[:keep_topN]]
 
     return vocab, df, ngram_counts
 
@@ -165,6 +164,9 @@ print()
 print(list(vocab)[:100])
 print()
 print(df.most_common()[:10])
+
+#%%
+df
 
 #%%
 reference_dict = dict(enumerate(vocab))
